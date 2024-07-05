@@ -3,6 +3,7 @@ package integration_test
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"math/rand/v2"
 
 	"golang.org/x/crypto/bcrypt"
@@ -27,5 +28,22 @@ func CreateUser(db *sql.DB) {
 	_, err := db.Query(sql, username, fakePassword)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func TruncateAllTables(db *sql.DB) {
+	query := `
+		DO $$ DECLARE
+			r RECORD;
+		BEGIN
+			FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname =current_schema()) LOOP
+				EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE';
+			END LOOP;
+		END $$;
+	`
+
+	_, err := db.Exec(query)
+	if err != nil {
+		log.Println(err)
 	}
 }

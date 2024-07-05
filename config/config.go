@@ -1,7 +1,12 @@
-package goissue
+package config
 
 import (
+	"database/sql"
+	"fmt"
+	"log"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 type EnvConfig struct {
@@ -29,4 +34,29 @@ func NewConfig() *EnvConfig {
 		DBPassword:  os.Getenv("DB_PASSWORD"),
 		JWTSecret:   []byte(os.Getenv("JWT_SECRET")),
 	}
+}
+
+var DBInstance *sql.DB
+
+func NewDB() *sql.DB {
+	if DBInstance != nil {
+		return DBInstance
+	}
+
+	config := NewConfig()
+
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		config.DBHost, config.DBPort, config.DBUser, config.DBName, config.DBPassword)
+
+	DBInstance, err := sql.Open("postgres", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = DBInstance.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	return DBInstance
 }
