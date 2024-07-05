@@ -1,11 +1,9 @@
-package main
+package goissue
 
 import (
 	"database/sql"
 	"fmt"
 	"log"
-	"log/slog"
-	"os"
 
 	_ "github.com/lib/pq"
 
@@ -29,14 +27,6 @@ func init() {
 }
 
 func NewApp() *App {
-	// log.SetFlags(log.LstdFlags | log.Lshortfile)
-	opts := &slog.HandlerOptions{
-		Level:     slog.LevelDebug,
-		AddSource: true,
-	}
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
-
 	config := NewConfig()
 	db := newDB(config)
 	repositories := repository.NewRepository(db)
@@ -59,8 +49,4 @@ func newDB(config *EnvConfig) *sql.DB {
 	}
 
 	return db
-}
-
-func main() {
-	fmt.Println("Starting")
 }

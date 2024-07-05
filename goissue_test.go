@@ -1,4 +1,4 @@
-package main
+package goissue
 
 import (
 	"database/sql"
