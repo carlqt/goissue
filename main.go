@@ -11,13 +11,15 @@ import (
 
 	"gotest_issue/repository"
 
+	"math/rand/v2"
+
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 type App struct {
-	// repositories
-	// configs
 	Repositories *repository.Repository
 	Config       *EnvConfig
 	DB           *sql.DB
@@ -76,4 +78,30 @@ func newDB(config *EnvConfig) *sql.DB {
 	}
 
 	return db
+}
+
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("cannot generate hash from string")
+	}
+
+	return string(hash), nil
+}
+
+func CreateUser(db *sql.DB) {
+	// We Create A lot of users!!
+
+	username := fmt.Sprintf("fake_user+%d", rand.IntN(100))
+	fakePassword := "password"
+
+	sql := "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
+	_, err := db.Query(sql, username, fakePassword)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func main() {
+	fmt.Println("Starting")
 }
