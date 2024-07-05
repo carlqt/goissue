@@ -6,8 +6,8 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"path/filepath"
-	"runtime"
+
+	_ "github.com/lib/pq"
 
 	"gotest_issue/repository"
 
@@ -26,21 +26,6 @@ type App struct {
 }
 
 func init() {
-	if os.Getenv("GO_ENV") == "test" {
-		_, file, _, ok := runtime.Caller(0)
-		if !ok {
-			fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env)")
-			os.Exit(1)
-		}
-		basepath := filepath.Dir(file)
-		err := godotenv.Load(filepath.Join(basepath, "../.env"))
-		if err != nil {
-			log.Fatal("can't load environments", err)
-		}
-
-		return
-	}
-
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
@@ -90,10 +75,10 @@ func HashPassword(password string) (string, error) {
 }
 
 func CreateUser(db *sql.DB) {
-	// We Create A lot of users!!
-
 	username := fmt.Sprintf("fake_user+%d", rand.IntN(100))
 	fakePassword := "password"
+
+	HashPassword(fakePassword)
 
 	sql := "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
 	_, err := db.Query(sql, username, fakePassword)
